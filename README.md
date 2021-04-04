@@ -1,1 +1,0 @@
-# SRE-interview-knowledge
