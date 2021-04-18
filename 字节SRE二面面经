@@ -1,0 +1,321 @@
+着重问了redis和mysql，还有问到python的基础知识，问了很多所以不太记得了，记得的一些问题整理一下
+
+#### 怎么抓包
+
+#### python yeild用法
+
+#### mysql实现事务的原理(MVCC)
+
+#### MySQL数据主从同步是如何实现的？
+
+#### redis数据淘汰机制
+
+
+### 三面准备
+
+#### 遇到最大困难是什么？怎么克服？
+
+'''
+##剑指offer
+
+from typing import List
+
+# Definition for singly-linked list
+
+class ListNode:
+    def __init__(self, x):
+        self.val = x
+        self.next = None
+    
+    
+class Linklist: #创建链表
+    def initList(self, data):
+        # 创建头结点
+        self.head = ListNode(data[0])
+        r=self.head
+        p = self.head
+        # 逐个为 data 内的数据创建结点, 建立链表
+        for i in data[1:]:
+            node = ListNode(i)
+            p.next = node
+            p = p.next
+        return r
+    def printlist(self,head):
+        if head == None: return
+        node = head
+        while node != None:
+            print(node.val,end=' ')
+            node = node.next
+        print("\t")
+
+# 定义树节点
+class Node:
+    def __init__(self, data):
+        self.left = None
+        self.right = None
+        self.data = data
+
+    def insert(self, data):
+    # 将新值与父节点进行比较
+        if self.data:  # 非空
+            if data < self.data:            #新值较小，放左边
+                if self.left is None:       #若空，则新建插入节点
+                    self.left = Node(data)
+                else:                       #否则，递归往下查找
+                    self.left.insert(data)
+            elif data > self.data:          #新值较大，放右边
+                if self.right is None:      #若空，则新建插入节点
+                    self.right = Node(data)
+                else:                       #否则，递归往下查找
+                    self.right.insert(data)
+        else:
+            self.data = data      
+    # 打印这棵树，中序遍历
+    def PrintTree(self):
+        if self.left:
+            self.left.PrintTree()
+        print( self.data),
+        if self.right:
+            self.right.PrintTree()  
+
+
+class Solution:
+    # 1. 链表中倒数k个节点：给定一个链表: 1->2->3->4->5, 和 k = 2. 返回链表 4->5.
+    def getKthFromEnd(self, head: ListNode, k: int) -> ListNode: 
+        # 快慢指针，先让快指针走k步，然后两个指针同步走，当快指针走到头时，慢指针就是链表倒数第k个节点。  
+        pfast = head
+        while k and pfast:
+            pfast = pfast.next
+            k -= 1
+        pslow = head
+        while pfast:
+            pslow = pslow.next
+            pfast = pfast.next
+        return pslow
+
+    # 2. 调整数组顺序使奇数位于偶数前面: 输入：nums = [1,2,3,4] 输出：[1,3,2,4]  注：[3,1,2,4] 也是正确的答案之一。
+    def exchange(self, nums: List[int]) -> List[int]:
+        # 快排 双指针  首尾双指针 定义头指针 left，尾指针 right. left一直往右移，直到它指向的值为偶数 right一直往左移， 直到它指向的值为奇数
+        # 交换 nums[left]nums[left] 和 nums[right]nums[right] .
+        # 重复上述操作，直到 left == right.
+        left = 0
+        right = len(nums) - 1
+        while left < right:
+            while left < right and nums[left] % 2 != 0:
+                left += 1
+            while left < right and nums[right] % 2 == 0:
+                right -= 1
+            nums[left], nums[right] = nums[right], nums[left]
+        return nums
+
+    # 3. 二叉搜索树与双向链表: 输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的循环双向链表。要求不能创建任何新的节点，只能调整树中节点指针的指向。
+    def treeToDoublyList(self, root: 'Node') -> 'Node':
+        # dfs(root)返回该子树最小（head）和最大（tail）的节点。后续遍历，将左子树的最大节点与当前root相连，右子树最小节点与当前root相连即可。
+        if not root: return None
+
+        def dfs(root): # 返回该子树最小（head）和最大（tail）的节点   递归
+            if not root:
+                return None, None
+            
+            left_head, left_tail = dfs(root.left)
+            if left_tail:
+                left_tail.right = root
+                root.left = left_tail
+            right_head, right_tail = dfs(root.right)
+            if right_head:
+                right_head.left = root
+                root.right = right_head
+            
+            head = left_head if left_head else root
+            tail = right_tail if right_tail else root
+            return head, tail
+        
+        head, tail = dfs(root)
+        head.left = tail
+        tail.right = head
+        return head
+    
+    # 4. 用两个栈实现一个队列。队列的声明如下，请实现它的两个函数 appendTail 和 deleteHead ，分别完成在队列尾部插入整数和在队列头部删除整数的功能。(若队列中没有元素，deleteHead 操作返回 -1 )
+    class CQueue:
+        def __init__(self):
+            self.queue = []
+        def appendTail(self, value: int) -> None:
+            self.queue.append(value)
+        def deleteHead(self) -> int:
+            if self.queue == []:
+                return -1
+            else:
+                return self.queue.pop(0)
+        
+    # 5. 圆圈中最后剩下的数字: 例如，0、1、2、3、4这5个数字组成一个圆圈，从数字0开始每次删除第3个数字，则删除的前4个数字依次是2、0、4、1，因此最后剩下的数字是3。
+    def lastRemaining(self, n: int, m: int) -> int:
+        x = 0
+        for i in range(2, n + 1):
+            x = (x + m) % i
+        return x
+    
+    # 6. 数组中的逆序对: 在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组，求出这个数组中的逆序对的总数。
+    def mergeSort(self, nums, tmp, l, r):
+        if l >= r:
+            return 0
+
+        mid = (l + r) // 2
+        inv_count = self.mergeSort(nums, tmp, l, mid) + self.mergeSort(nums, tmp, mid + 1, r)
+        i, j, pos = l, mid + 1, l
+        while i <= mid and j <= r:
+            if nums[i] <= nums[j]:
+                tmp[pos] = nums[i]
+                i += 1
+                inv_count += (j - (mid + 1))
+            else:
+                tmp[pos] = nums[j]
+                j += 1
+            pos += 1
+        for k in range(i, mid + 1):
+            tmp[pos] = nums[k]
+            inv_count += (j - (mid + 1))
+            pos += 1
+        for k in range(j, r + 1):
+            tmp[pos] = nums[k]
+            pos += 1
+        nums[l:r+1] = tmp[l:r+1]
+        return inv_count
+
+    def reversePairs(self, nums: List[int]) -> int:
+        n = len(nums)
+        tmp = [0] * n
+        return self.mergeSort(nums, tmp, 0, n - 1)
+
+    # 7. 最长不含重复字符的子字符串
+    #滑动窗口：定义左右两个指针，如果右指针的值在数组[left:right]里，那么left+=1，直到该值不在里面
+    def lengthOfLongestSubstring(self, arr):
+        """
+        :type s: str
+        :rtype: int
+        """
+        left = 0 
+        right = 0
+        maxLen = 0
+        while right < len(arr):
+            maxLen = max(maxLen,right - left)
+            while arr[right]  in arr[left:right]:
+                left +=1
+            
+            
+            right+=1
+        return max(maxLen,right - left)
+
+    #滑动窗口+哈希表：可以把各个值和下标记录到字典里，如果右指针的值在字典里出现过了，那么left需要为最后一次右指针出现的下标+1
+    def maxLength(self, arr):
+        """
+        滑动窗口的变形，可以把各个值和下标记录到字典里，如果右指针的值在字典里出现过了，那么left需要为最后一次右指针出现的下标+1
+        :param arr:
+        :return:
+        """
+
+
+
+        left = 0
+        right = 0
+        maxLen = 0
+        pair = {}
+        while right < len(arr):
+            maxLen = max(maxLen, right - left)
+            if arr[right] in pair:
+                left = max(left, pair[arr[right]] + 1)
+
+            pair[arr[right]] = right
+
+            right += 1
+        return max(maxLen, right - left)
+
+    # 8. 青蛙跳台阶问题: 一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。
+    def numWays(self, n: int) -> int:
+        # 类似求斐波那契数列第 nn 项的值
+        a, b = 1, 1
+        for _ in range(n):
+            a, b = b, a + b
+        return a % 1000000007
+
+    # 9. 字符串的排列: 输入一个字符串，打印出该字符串中字符的所有排列。
+    '''
+    重复排列方案与剪枝：
+    当字符串存在重复字符时，排列方案中也存在重复的排列方案。
+    为排除重复方案，需在固定某位字符时，保证 “每种字符只在此位固定一次” ，即遇到重复字符时不交换，直接跳过。
+    从 DFS 角度看，此操作称为 “剪枝” 。
+    '''
+    def permutation(self, s: str) -> List[str]:
+        c, res = list(s), []
+        def dfs(x):
+            if x == len(c) - 1:
+                res.append(''.join(c))   # 添加排列方案
+                return
+            dic = set()
+            for i in range(x, len(c)):
+                if c[i] in dic: continue # 重复，因此剪枝
+                dic.add(c[i])
+                c[i], c[x] = c[x], c[i]  # 交换，将 c[i] 固定在第 x 位
+                dfs(x + 1)               # 开启固定第 x + 1 位字符
+                c[i], c[x] = c[x], c[i]  # 恢复交换
+        dfs(0)
+        return res
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    l = Linklist()
+    x = Solution()
+    #t = printtree()
+
+    # 1. 链表中倒数k个节点：给定一个链表: 1->2->3->4->5, 和 k = 2. 返回链表 4->5.
+    data = [1,2,3,4,5]
+    head = l.initList(data)
+    result1 = x.getKthFromEnd(head, 2)
+    l.printlist(result1)
+
+    # 2. 调整数组顺序使奇数位于偶数前面: 输入：nums = [1,2,3,4] 输出：[1,3,2,4]  注：[3,1,2,4] 也是正确的答案之一。
+    nums = [1,2,4,5,3,6]
+    result2 = x.exchange(nums)
+    print(result2)
+
+    # 3. 二叉搜索树与双向链表
+    root = Node(4)
+    root.insert(2)
+    root.insert(5)
+    root.insert(1)
+    root.insert(3)
+    result3 = x.treeToDoublyList(root)
+    #t.PrintTree(result3)
+
+    # 4. 
+
+    # 5. 
+
+    # 6.
+    nums = [7,5,6,4]
+    result6 = x.reversePairs(nums)
+    print(result6)
+
+    # 7.
+    arr = "abcabcbb"
+    result7 = x.lengthOfLongestSubstring(arr)
+    print(result7)
+
+    # 8. 
+    n = 7
+    result8 = x.numWays(n)
+    print(result8)
+
+    # 9.
+    s = "abc"
+    result9 = x.permutation(s)
+    print(result9)
+'''
